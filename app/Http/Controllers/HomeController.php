@@ -2,7 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Article;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\Paginator;
+
+Paginator::useBootstrap();
 
 class HomeController extends Controller
 {
@@ -23,6 +27,7 @@ class HomeController extends Controller
      */
     public function index()
     {
-        return view('home');
+        $articles = Article::paginate(10);
+        return view('home')->with('articles', $articles);
     }
 }

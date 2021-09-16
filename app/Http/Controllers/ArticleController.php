@@ -3,8 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Article;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Validator;
+use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\Storage;
+
+Paginator::useBootstrap();
+
 class ArticleController extends Controller
 {
 
@@ -21,7 +27,8 @@ class ArticleController extends Controller
      */
     public function index()
     {
-        return view('welcome');
+        $articles = Article::paginate(10);
+        return view('welcome')->with('articles', $articles);
     }
 
     /**
@@ -42,15 +49,23 @@ class ArticleController extends Controller
      */
     public function store(Request $request)
     {
-        //* 1- data validation for title and body
-         $this->validator($request->all())->validate();
-        //* 2- adding data to database
-         //  $article = Article::create($request->all());
-         $article = Article::create([
-             'title'=> $request->title,
-             'body'=> $request->body,
-             'thumbnail'=> 'loading'
-         ]);
+        //* 1. validation Title, Body
+        $this->validator($request->all())->validate();
+        //* 2. add to database.
+
+        // 1. get file from form
+        $file = $request->file('thumbnail');
+        // 2. name the file
+        $time = Carbon::now();
+        $directory = date_format($time,'Y').'/'.date_format($time,'m');
+        $fileName = date_format($time,'h').date_format($time,'s').rand(1,9).'.'.$file->extension();
+        // 3. upload 
+        Storage::disk('public')->putFileAs($directory,$file,$fileName);
+        $article = Article::create([
+            'body' => $request->body,
+            'title' => $request->title,
+            'thumbnail' => $directory.'/'.$fileName,
+        ]);
         //* 3- returnig to another page
         $request->session()->flash('message','blog posted successfully');
         return redirect()->route('admin_index');
@@ -64,7 +79,8 @@ class ArticleController extends Controller
      */
     public function show($id)
     {
-        //
+        $article = Article::where('id', $id)->firstOrFail();
+        return view('article')->with('article',$article);
     }
 
     /**
@@ -75,7 +91,8 @@ class ArticleController extends Controller
      */
     public function edit($id)
     {
-        //
+        $article = Article::where('id', $id)->firstOrFail();
+        return view('admin.edit')->with('article',$article);
     }
 
     /**
@@ -87,7 +104,28 @@ class ArticleController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $article=Article::where('id',$id)->firstOrFail();
+
+        $article->update([
+            'body' => $request->body,
+            'title' => $request->title,
+        ]);
+
+        if($request->file('thumbnail'))
+        {
+            // 1. get file from form
+            $file = $request->file('thumbnail');
+            // 2. name the file
+            $time = Carbon::now();
+            $directory = date_format($time,'Y').'/'.date_format($time,'m');
+            $fileName = date_format($time,'h').date_format($time,'s').rand(1,9).'.'.$file->extension();
+            // 3. upload 
+            Storage::disk('public')->putFileAs($directory,$file,$fileName);
+            $article->thumbnail = $directory.'/'.$fileName;
+            $article->save();
+        }
+        $request->session()->flash('message','blog edited successfully');
+        return redirect()->route('admin_index');
     }
 
     /**

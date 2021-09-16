@@ -13,13 +13,16 @@
 <div class="card-header">{{ __('Add Blog') }}</div>
 
 <div class="card-body">
-    <form class="form-horizontal" action="{{url('/admin/store') }}" method="post">
+    <form enctype="multipart/form-data" class="form-horizontal" action="{{url('/admin/store') }}" method="post">
         {{ csrf_field() }}
         <div class="form-group">
             <input class="form-control" type="text" name="title" placeholder="type here the title ">
         </div>
         <div class="form-group">
             <textarea name="body" id="mytextarea">type here</textarea>
+        </div>
+        <div class="form-group">
+            <input class="form-control" type="file" name="thumbnail" accept="image/*">
         </div>
         <div class="form-group">
             <input class="btn btn-success" type="submit" value="post">

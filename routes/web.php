@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\ArticleController;
 
 /*
 |--------------------------------------------------------------------------
@@ -13,13 +13,10 @@ use Illuminate\Support\Facades\Route;
 | contains the "web" middleware group. Now create something great!
 |
 */
+Route::get('/', [App\Http\Controllers\ArticleController::class, 'index'])->name('main_index');
+Route::get('/article/{id}', [App\Http\Controllers\ArticleController::class, 'show'])->name('show_article');
+// Route::get('/article/(id)', [App\Http\Controllers\ArticleController::class, 'show'])->name('show_article');
 
-Route::get('/', function () {
-    return view('welcome');
-
-});
-
-Route::Get('/article/(id)','ArticleController@show')->name('show_article');
 
 Auth::routes();
     
@@ -30,7 +27,8 @@ Route::group(['middleware' => 'auth','prefix' => 'admin'], function ()
     Route::get('/', [App\Http\Controllers\HomeController::class, 'index'])->name('admin_index');
     Route::get('/create', [App\Http\Controllers\ArticleController::class, 'create'])->name('create_article');
     Route::post('/store', [App\Http\Controllers\ArticleController::class, 'store'])->name('store_article');
-    Route::put('/update', [App\Http\Controllers\ArticleController::class, 'update'])->name('update_article');
+    Route::get('/edit/{id}', [App\Http\Controllers\ArticleController::class, 'edit'])->name('edit_article');
+    Route::put('/update/{id}', [App\Http\Controllers\ArticleController::class, 'update'])->name('update_article');
     Route::put('/delete', [App\Http\Controllers\ArticleController::class, 'destroy'])->name('delete_article');
 
 });
